@@ -9,7 +9,7 @@ import java.util.List;
 @Builder
 public class Loan {
 
-    private User users;
+    private User user;
     private List<Book> books;
 
 }

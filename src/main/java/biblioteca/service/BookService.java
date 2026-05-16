@@ -7,7 +7,13 @@ import java.util.List;
 
 public class BookService {
 
-    private final List<Book> books = new ArrayList<>();
+    private final List<Book> books = new ArrayList<>(
+            List.of(
+                    new Book("Clean Code", "pLA LPA", 2014, true),
+                    new Book("Java", "BLA VLA BLA", 2021),
+                    new Book("Spring", "NAO SEI" ,2020)
+            )
+    );
 
     public List<Book> listAll() {
         return books;

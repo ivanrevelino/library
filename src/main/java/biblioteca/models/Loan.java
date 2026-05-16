@@ -9,6 +9,7 @@ import java.util.List;
 @Builder
 public class Loan {
 
+    private Long id;
     private User user;
     private List<Book> books;
 

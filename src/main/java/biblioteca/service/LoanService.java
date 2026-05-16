@@ -3,23 +3,33 @@ package biblioteca.service;
 import biblioteca.models.Book;
 import biblioteca.models.Loan;
 import biblioteca.models.User;
+import lombok.RequiredArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
+@RequiredArgsConstructor
 public class LoanService {
 
-    public final Map<User, Loan> loans = new HashMap<>();
+    public final Map<Long, List<Loan>> loans = new HashMap<>();
+    public final UserService userService = new UserService();
 
     public Loan registerLoan(User user, List<Book> books) {
-        Loan loan = Loan.builder()
-                .books(books)
-                .user(user)
-                .build();
-        user.getOwnBooks().addAll(books);
-        loans.put(user, loan);
+
+        List<Book> availableBooks = books.stream()
+                .filter(bk -> !bk.isOnLoan())
+                .toList();
+        if (availableBooks.isEmpty()) {
+            throw new IllegalArgumentException("There is no book available for loan");
+        }
+
+        availableBooks.forEach(book -> book.setOnLoan(true));
+        Loan loan = Loan.builder().books(availableBooks).user(user).build();
+        user.getOwnBooks().addAll(availableBooks);
+        loans.computeIfAbsent(user.getId(), k -> new ArrayList<>()).add(loan);
         return loan;
     }
 

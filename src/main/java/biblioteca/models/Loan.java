@@ -3,6 +3,7 @@ package biblioteca.models;
 import lombok.Builder;
 import lombok.Data;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -12,5 +13,6 @@ public class Loan {
     private Long id;
     private User user;
     private List<Book> books;
+    private LocalDateTime loanDateTime;
 
 }

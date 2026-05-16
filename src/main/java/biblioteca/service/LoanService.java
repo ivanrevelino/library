@@ -5,6 +5,7 @@ import biblioteca.models.Loan;
 import biblioteca.models.User;
 import lombok.RequiredArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -19,17 +20,20 @@ public class LoanService {
 
     public Loan registerLoan(User user, List<Book> books) {
 
-        List<Book> availableBooks = books.stream()
-                .filter(bk -> !bk.isOnLoan())
-                .toList();
+        List<String> unavailableBooks = books.stream().filter(Book::isOnLoan).map(Book::getName).toList();
+        System.out.println("Unavailable books:\n" + unavailableBooks);
+
+        List<Book> availableBooks = books.stream().filter(bk -> !bk.isOnLoan()).toList();
+
         if (availableBooks.isEmpty()) {
             throw new IllegalArgumentException("There is no book available for loan");
         }
 
         availableBooks.forEach(book -> book.setOnLoan(true));
-        Loan loan = Loan.builder().books(availableBooks).user(user).build();
+        Loan loan = Loan.builder().books(availableBooks).user(user).id(user.getId()).loanDateTime(LocalDateTime.now()).build();
         user.getOwnBooks().addAll(availableBooks);
         loans.computeIfAbsent(user.getId(), k -> new ArrayList<>()).add(loan);
+
         return loan;
     }
 

@@ -16,6 +16,11 @@ public class TestsEnvironment {
 
         LoanService loanService = new LoanService();
         Loan loan = loanService.registerLoan(user, books);
+        List<Book> ownBooks = user.getOwnBooks();
         System.out.println(loan);
+        System.out.println(ownBooks);
+
+        loanService.showAllLoans();
+
     }
 }

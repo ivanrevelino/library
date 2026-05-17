@@ -22,8 +22,7 @@ public class LoanService {
 
         List<String> unavailableBooks = books.stream().filter(Book::isOnLoan).map(Book::getName).toList();
         System.out.println("Unavailable books:\n" + unavailableBooks);
-
-        List<Book> availableBooks = books.stream().filter(bk -> !bk.isOnLoan()).toList();
+        List<Book> availableBooks = books.stream().filter(bk -> !(bk.isOnLoan())).toList();
 
         if (availableBooks.isEmpty()) {
             throw new IllegalArgumentException("There is no book available for loan");
@@ -31,7 +30,7 @@ public class LoanService {
 
         availableBooks.forEach(book -> book.setOnLoan(true));
         Loan loan = Loan.builder().books(availableBooks).user(user).id(user.getId()).loanDateTime(LocalDateTime.now()).build();
-        user.getOwnBooks().addAll(availableBooks);
+        userService.addBooks(user, availableBooks);
         loans.computeIfAbsent(user.getId(), k -> new ArrayList<>()).add(loan);
 
         return loan;
@@ -39,5 +38,16 @@ public class LoanService {
 
     public void showAllLoans() {
         loans.values().forEach(System.out::println);
+    }
+
+    public void devolverLivros(Loan loan) {
+        for (Book book : loan.getBooks()) {
+            if (book.isOnLoan()) {
+                book.setOnLoan(false);
+            }
+        }
+        loan.getUser().getOwnBooks().clear();
+        loan.setReturnedDate(LocalDateTime.now());
+        loan.setReturned(true);
     }
 }

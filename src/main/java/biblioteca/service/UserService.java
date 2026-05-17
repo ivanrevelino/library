@@ -33,14 +33,13 @@ public class UserService {
         return user;
     }
 
-    public List<Book> addBooks(Long id, List<Book> books) {
-        boolean b = findById(id).getOwnBooks().addAll(books);
-        System.out.println(b);
-        return books;
+    public void addBooks(User user, List<Book> books) {
+        User byId = findById(user.getId());
+        byId.getOwnBooks().addAll(books);
     }
 
-    public Book addBook(Long id, Book book) {
-        findById(id).getOwnBooks().add(book);
+    public Book addBook(User user, Book book) {
+        findById(user.getId()).getOwnBooks().add(book);
         return book;
     }
 

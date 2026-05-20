@@ -10,7 +10,7 @@ import java.util.List;
 @Builder
 public class Loan {
 
-    private Long id;
+    private String id;
     private User user;
     private List<Book> books;
     private boolean returned;

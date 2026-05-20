@@ -6,31 +6,41 @@ import biblioteca.models.User;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 public class LoanService {
-
-    public final Map<Long, List<Loan>> loans = new HashMap<>();
     public final UserService userService = new UserService();
+    public final Map<Long, List<Loan>> loans = new HashMap<>();
 
     public Loan registerLoan(User user, List<Book> books) {
 
-        List<String> unavailableBooks = books.stream().filter(Book::isOnLoan).map(Book::getName).toList();
-        System.out.println("Unavailable books:\n" + unavailableBooks);
-        List<Book> availableBooks = books.stream().filter(bk -> !(bk.isOnLoan())).toList();
+        if (books == null || books.isEmpty()) throw new IllegalArgumentException("Invalid argument");
+
+        if (user == null) throw new IllegalArgumentException("Invalid argument, User cant be null");
+
+        Map<Boolean, List<Book>> collectedBooks = books.stream().collect(Collectors.partitioningBy(Book::isOnLoan));
+
+        List<Book> unavailableBooks = collectedBooks.get(true);
+
+        List<Book> availableBooks = collectedBooks.get(false);
+
+        System.out.println(unavailableBooks);
 
         if (availableBooks.isEmpty()) {
             throw new IllegalArgumentException("There is no book available for loan");
         }
 
+        Loan loan = Loan.builder()
+                .books(availableBooks)
+                .user(user)
+                .id(UUID.randomUUID().toString()).
+                loanDateTime(LocalDateTime.now())
+                .build();
+
         availableBooks.forEach(book -> book.setOnLoan(true));
-        Loan loan = Loan.builder().books(availableBooks).user(user).id(user.getId()).loanDateTime(LocalDateTime.now()).build();
-        userService.addBooks(user, availableBooks);
+        user.getOwnBooks().addAll(availableBooks);
         loans.computeIfAbsent(user.getId(), k -> new ArrayList<>()).add(loan);
 
         return loan;
@@ -40,13 +50,20 @@ public class LoanService {
         loans.values().forEach(System.out::println);
     }
 
-    public void devolverLivros(Loan loan) {
-        for (Book book : loan.getBooks()) {
-            if (book.isOnLoan()) {
-                book.setOnLoan(false);
-            }
+    public void returnBook(Loan loan) {
+
+        if (loan == null) {
+            throw new IllegalArgumentException("Loan does not exist");
         }
-        loan.getUser().getOwnBooks().clear();
+
+        User user = loan.getUser();
+
+        // seta os livros como nao emprestados e remove os livros do usuario que fazem parte do emprestimo
+        for (Book book : loan.getBooks()) {
+            book.setOnLoan(false);
+            user.getOwnBooks().remove(book);
+        }
+
         loan.setReturnedDate(LocalDateTime.now());
         loan.setReturned(true);
     }

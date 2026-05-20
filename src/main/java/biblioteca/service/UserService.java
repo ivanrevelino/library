@@ -33,14 +33,24 @@ public class UserService {
         return user;
     }
 
-    public void addBooks(User user, List<Book> books) {
-        User byId = findById(user.getId());
-        byId.getOwnBooks().addAll(books);
-    }
+    public User addBooks(User user, List<Book> books) {
+        if (user == null || user.getId() == null) {
+            throw new IllegalArgumentException("Usuario Invalido");
+        }
 
-    public Book addBook(User user, Book book) {
-        findById(user.getId()).getOwnBooks().add(book);
-        return book;
+        if (books == null || books.isEmpty()) throw new IllegalArgumentException("A lista de livros esta vazia ou nao existe");
+
+        User userFindById = findById(user.getId());
+        if (userFindById == null) {
+            throw new RuntimeException("Usuario nao existe");
+        }
+
+        if (userFindById.getOwnBooks() == null) {
+            userFindById.setOwnBooks(new ArrayList<>());
+        }
+
+        userFindById.getOwnBooks().addAll(books);
+        return userFindById;
     }
 
     public void remove(Long id) {

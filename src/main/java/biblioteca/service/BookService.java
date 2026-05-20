@@ -9,9 +9,9 @@ public class BookService {
 
     private final List<Book> books = new ArrayList<>(
             List.of(
-                    new Book("Clean Code", "pLA LPA", 2014, true),
-                    new Book("Java", "BLA VLA BLA", 2021),
-                    new Book("Spring", "NAO SEI" ,2020)
+                    new Book("O sapo nao lava o pe", "O Sapo cantor", 2014),
+                    new Book("Oque eu aprendi a nao ser", "Sr Alguem", 2021),
+                    new Book("Someone girl", "Sr Banana" ,2020)
             )
     );
 

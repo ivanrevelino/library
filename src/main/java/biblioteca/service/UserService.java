@@ -16,10 +16,11 @@ public class UserService {
     );
 
     public List<User> listAll(){
-        return users;
+        return new ArrayList<>(users);
     }
 
     public User findById(Long id) {
+        if (id == null || id <= 0) throw new IllegalArgumentException("Invalid id");
         for (User user : users) {
             if (user.getId().equals(id)){
                 return user;
@@ -29,31 +30,14 @@ public class UserService {
     }
 
     public User addUser(User user) {
+        if (user == null) throw new IllegalArgumentException("User cannot be null");
         users.add(user);
         return user;
     }
 
-    public User addBooks(User user, List<Book> books) {
-        if (user == null || user.getId() == null) {
-            throw new IllegalArgumentException("Usuario Invalido");
-        }
-
-        if (books == null || books.isEmpty()) throw new IllegalArgumentException("A lista de livros esta vazia ou nao existe");
-
-        User userFindById = findById(user.getId());
-        if (userFindById == null) {
-            throw new RuntimeException("Usuario nao existe");
-        }
-
-        if (userFindById.getOwnBooks() == null) {
-            userFindById.setOwnBooks(new ArrayList<>());
-        }
-
-        userFindById.getOwnBooks().addAll(books);
-        return userFindById;
-    }
-
     public void remove(Long id) {
-        users.remove(findById(id));
+        User userToRemove = findById(id);
+        if (userToRemove == null) throw new IllegalArgumentException("User not found with id " + id);
+        users.remove(userToRemove);
     }
 }

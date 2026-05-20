@@ -16,10 +16,14 @@ public class BookService {
     );
 
     public List<Book> listAll() {
-        return books;
+        // evita alguem mandar listAll().clear
+        return new ArrayList<>(books);
     }
 
     public Book findByName(String name) {
+
+        if (name == null) throw new IllegalArgumentException("Invalid argument, name cannot be null");
+
         for (Book book : books) {
             if (book.getName().equals(name)) {
                 return book;
@@ -29,11 +33,15 @@ public class BookService {
     }
 
     public Book add(Book book) {
+        if (book == null) throw new IllegalArgumentException("Book cannot be null");
         books.add(book);
         return book;
     }
 
     public void remove(String name) {
-        books.remove(findByName(name));
+        if (name == null) throw new IllegalArgumentException("Name cannot be null");
+        Book bookToRemove = findByName(name);
+        if (bookToRemove == null) throw new IllegalArgumentException("No book found with the given name");
+        books.remove(bookToRemove);
     }
 }

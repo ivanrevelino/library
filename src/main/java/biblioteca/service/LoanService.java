@@ -9,9 +9,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
-@RequiredArgsConstructor
 public class LoanService {
-    public final UserService userService = new UserService();
     public final Map<Long, List<Loan>> loans = new HashMap<>();
 
     public Loan registerLoan(User user, List<Book> books) {
@@ -46,6 +44,13 @@ public class LoanService {
         return loan;
     }
 
+    public List<Loan> getLoansByUserId(Long id) {
+        if (id == null || id <= 0) throw new IllegalArgumentException("Invalid id");
+        List<Loan> loansList = loans.get(id);
+        if (loansList == null) throw new NoSuchElementException("Loan not found for user id: " + id);
+        return loansList;
+    }
+
     public void showAllLoans() {
         loans.values().forEach(System.out::println);
     }
@@ -64,7 +69,7 @@ public class LoanService {
             user.getOwnBooks().remove(book);
         }
 
-        loan.setReturnedDate(LocalDateTime.now());
         loan.setReturned(true);
+        loan.setReturnedDate(LocalDateTime.now());
     }
 }

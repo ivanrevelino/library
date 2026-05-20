@@ -4,6 +4,8 @@ import biblioteca.models.Book;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class BookService {
 
@@ -16,14 +18,11 @@ public class BookService {
     );
 
     public List<Book> listAll() {
-        // evita alguem mandar listAll().clear
         return new ArrayList<>(books);
     }
 
     public Book findByName(String name) {
-
-        if (name == null) throw new IllegalArgumentException("Invalid argument, name cannot be null");
-
+        validateNotNull(name, "Invalid argument, name cannot be null");
         for (Book book : books) {
             if (book.getName().equals(name)) {
                 return book;
@@ -33,15 +32,25 @@ public class BookService {
     }
 
     public Book add(Book book) {
-        if (book == null) throw new IllegalArgumentException("Book cannot be null");
+        validateNotNull(book, "Book cannot be null");
         books.add(book);
         return book;
     }
 
     public void remove(String name) {
-        if (name == null) throw new IllegalArgumentException("Name cannot be null");
+        validateNotNull(name, "Name cannot be null");
         Book bookToRemove = findByName(name);
-        if (bookToRemove == null) throw new IllegalArgumentException("No book found with the given name");
+        validateNotNull(bookToRemove, "No book found with the given name");
         books.remove(bookToRemove);
+    }
+
+    public List<Book> getAvailableBooksForLoan(List<Book> books) {
+        validateNotNull(books, "Books cannot be null");
+        Map<Boolean, List<Book>> collectedBooks = books.stream().collect(Collectors.partitioningBy(Book::isOnLoan));
+        return collectedBooks.get(false);
+    }
+
+    private static <T> void validateNotNull(T t, String message) {
+        if (t == null) throw new IllegalArgumentException(message);
     }
 }

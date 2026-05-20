@@ -9,40 +9,36 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@RequiredArgsConstructor
 public class LoanService {
     public final Map<Long, List<Loan>> loans = new HashMap<>();
+    private static final BookService bookService = new BookService();
 
     public Loan registerLoan(User user, List<Book> books) {
+        validateLoan(user, books);
 
-        if (books == null || books.isEmpty()) throw new IllegalArgumentException("Invalid argument");
+        List<Book> availableBooksForLoan = bookService.getAvailableBooksForLoan(books);
 
-        if (user == null) throw new IllegalArgumentException("Invalid argument, User cant be null");
+        if (availableBooksForLoan.isEmpty()) throw new IllegalArgumentException("There is no book available for loan");
 
-        Map<Boolean, List<Book>> collectedBooks = books.stream().collect(Collectors.partitioningBy(Book::isOnLoan));
+        Loan loan = createLoan(user, availableBooksForLoan);
 
-        List<Book> unavailableBooks = collectedBooks.get(true);
+        availableBooksForLoan.forEach(book -> book.setOnLoan(true));
+        user.getOwnBooks().addAll(availableBooksForLoan);
+        loans.computeIfAbsent(user.getId(), k -> new ArrayList<>()).add(loan);
 
-        List<Book> availableBooks = collectedBooks.get(false);
+        return loan;
+    }
 
-        System.out.println(unavailableBooks);
-
-        if (availableBooks.isEmpty()) {
-            throw new IllegalArgumentException("There is no book available for loan");
-        }
-
-        Loan loan = Loan.builder()
+    private static Loan createLoan(User user, List<Book> availableBooks) {
+        return Loan.builder()
                 .books(availableBooks)
                 .user(user)
                 .id(UUID.randomUUID().toString()).
                 loanDateTime(LocalDateTime.now())
                 .build();
-
-        availableBooks.forEach(book -> book.setOnLoan(true));
-        user.getOwnBooks().addAll(availableBooks);
-        loans.computeIfAbsent(user.getId(), k -> new ArrayList<>()).add(loan);
-
-        return loan;
     }
+
 
     public List<Loan> getLoansByUserId(Long id) {
         if (id == null || id <= 0) throw new IllegalArgumentException("Invalid id");
@@ -62,8 +58,6 @@ public class LoanService {
         }
 
         User user = loan.getUser();
-
-        // seta os livros como nao emprestados e remove os livros do usuario que fazem parte do emprestimo
         for (Book book : loan.getBooks()) {
             book.setOnLoan(false);
             user.getOwnBooks().remove(book);
@@ -71,5 +65,11 @@ public class LoanService {
 
         loan.setReturned(true);
         loan.setReturnedDate(LocalDateTime.now());
+    }
+
+    private static void validateLoan(User user, List<Book> books) {
+        if (books == null || books.isEmpty()) throw new IllegalArgumentException("Books list cannot be null or empty");
+
+        if (user == null) throw new IllegalArgumentException("Invalid argument, User cant be null");
     }
 }
